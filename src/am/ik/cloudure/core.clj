@@ -34,10 +34,10 @@
         :name ~(symbol mapper-name)
         :extends org.apache.hadoop.mapreduce.Mapper
         :prefix ~mapper-prefix
-        )       
+        )
        (defn ~(symbol (str mapper-prefix "map")) 
          ~@(if mapper-fn? (let [this (gensym) key (gensym) value (gensym) context (gensym)]
-                            `([~this ~key ~value ~context] (~mapper ~this ~key ~value ~context)))
+                            `([~this ~key ~value ~context] (~mapper ~key ~value ~context)))
                `(~mapper-args ~@(if (not (empty? mapper-body)) mapper-body))
                )
          )
@@ -47,10 +47,9 @@
         :prefix ~reducer-prefix
         )
        (defn ~(symbol (str reducer-prefix "reduce")) 
-         `(if reducer-fn? (let [this (gensym) key (gensym) values (gensym) context (gensym)]
-                            `([~this ~key ~values ~context] (~reducer ~this ~key ~values ~context))))
-         `(~reducer-args ~@(if (not (empty? reducer-body)) reducer-body)))
-         )
+         ~@(if reducer-fn? (let [this (gensym) key (gensym) values (gensym) context (gensym)]
+                             `([~this ~key ~values ~context] (~reducer ~key ~values ~context)))
+               `(~reducer-args ~@(if (not (empty? reducer-body)) reducer-body))))
        (defn ~(symbol get-job)
          ([] (~(symbol get-job) true))
          ([~'set-jar?]
