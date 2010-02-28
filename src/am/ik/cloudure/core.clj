@@ -11,37 +11,45 @@
   (.replace name \- \_)
   )
 
-(defmacro defmapreduce [name {:keys [mapper reducer]} & body]
+(defmacro defmapreduce [name & options]
   "define Mapper and Reducer"
-  (let [class-name (escape-name (str name))
+  (let [args (apply hash-map options)
+        mapper (:mapper args)
+        reducer (:reducer args)
+        mapper-fn? (symbol? mapper)
+        reducer-fn? (symbol? reducer)
+        class-name (escape-name (str name))
         mapper-name  (str *ns* "." class-name ".mapper")
-        mapper-prefix (str name "-mapper")
-        mapper-args (into ['this] (first mapper))
-        mapper-body (rest mapper)
+        mapper-prefix (str name "-mapper-")
+        mapper-args (or mapper-fn? (into ['this] (first mapper)))
+        mapper-body (or mapper-fn? (rest mapper))
         reducer-name (str *ns* "." class-name ".reducer")
-        reducer-prefix (str name "-reducer")
-        reducer-args (into ['this] (first reducer))
-        reducer-body (rest reducer)
-        get-job (str "get-" name "-job")        
+        reducer-prefix (str name "-reducer-")
+        reducer-args (or reducer-fn? (into ['this] (first reducer)))
+        reducer-body (or reducer-fn? (rest reducer))
+        get-job (str "get-" name "-job")
         ]
     `(do
        (gen-class
-        :name ~mapper-name
+        :name ~(symbol mapper-name)
         :extends org.apache.hadoop.mapreduce.Mapper
         :prefix ~mapper-prefix
-        )
-       (defn ~(symbol (str mapper-prefix "-map")) 
-         ~mapper-args
-         ~@(if (not (empty? mapper-body)) mapper-body)
+        )       
+       (defn ~(symbol (str mapper-prefix "map")) 
+         ~@(if mapper-fn? (let [this (gensym) key (gensym) value (gensym) context (gensym)]
+                            `([~this ~key ~value ~context] (~mapper ~this ~key ~value ~context)))
+               `(~mapper-args ~@(if (not (empty? mapper-body)) mapper-body))
+               )
          )
        (gen-class
-        :name ~reducer-name
+        :name ~(symbol reducer-name)
         :extends org.apache.hadoop.mapreduce.Reducer
         :prefix ~reducer-prefix
         )
-       (defn ~(symbol (str reducer-prefix "-reduce")) 
-         ~reducer-args
-         ~@(if (not (empty? reducer-body)) reducer-body)
+       (defn ~(symbol (str reducer-prefix "reduce")) 
+         `(if reducer-fn? (let [this (gensym) key (gensym) values (gensym) context (gensym)]
+                            `([~this ~key ~values ~context] (~reducer ~this ~key ~values ~context))))
+         `(~reducer-args ~@(if (not (empty? reducer-body)) reducer-body)))
          )
        (defn ~(symbol get-job)
          ([] (~(symbol get-job) true))
@@ -56,3 +64,27 @@
          {:tag Class}
          )
        )))
+
+(comment 
+  ;; how to define MapReduce like this
+
+  (defn hello-map [key value context]
+    (.write context (Text. key) (IntWritable. (Integet/parseInt value)))
+    )
+  (defn hello-reduce [key values context]
+    (.write context (IntWritable. (reduce + (map #(.get %) values))))
+    )
+  (defmapreduce hello
+    :mapper hello-map
+    :reducer hello-reduce
+    )
+
+  ;; or
+  (defmapreduce hello
+    :mapper ([key value context] (.write context (Text. key) (IntWritable. (Integet/parseInt value))))
+    :reducer ([key values context] (.write context (IntWritable. (reduce + (map #(.get %) values)))))
+    )
+  ;; This definition generate hello.mapper class which extends org.apache.hadoop.mapreduce.Mapper and invokes hello-map in Mapper#map method
+  ;; and hello.reducer class which extend org.apache.hadoop.mapreduce.Reducer and invokes hello-reduce in Reducer#reduce method.  
+  ;; You can get Job by call (get-hello-job) which is set Mapper class and Reducer class defined above
+  )
