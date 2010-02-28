@@ -1,0 +1,7 @@
+after cloudure installed
+
+$ lein uberjar
+$ java -Xmx1000m -jar max-temperature-standalone.jar input/sample.txt output
+
+!! output must be removed before execute above !!
+
