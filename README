@@ -1,10 +1,10 @@
 # cloudure
-
-FIXME: write description
+a Hadoop(MapReduce) library for Clojure 
 
 ## Usage
-
-FIXME: write
+add
+[org.clojars.making/cloudure "0.1.0-SNAPSHOT"]
+to your project.clj
 
 ## Installation
 
