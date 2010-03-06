@@ -1,4 +1,4 @@
-(ns am.ik.cloudure.core
+(ns org.clojars.making.cloudure.core
   (:import (org.apache.hadoop.fs Path)
            (org.apache.hadoop.io IntWritable LongWritable Text)
            (org.apache.hadoop.mapreduce Job Mapper Mapper$Context Reducer Reducer$Context)
