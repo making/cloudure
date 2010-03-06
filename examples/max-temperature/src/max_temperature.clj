@@ -6,7 +6,7 @@
            (org.apache.hadoop.mapreduce.lib.input FileInputFormat)
            (org.apache.hadoop.mapreduce.lib.output FileOutputFormat)
            )
-  (:use am.ik.cloudure.core)
+  (:use org.clojars.making.cloudure.core)
   )
 
 (defmapreduce temperature 

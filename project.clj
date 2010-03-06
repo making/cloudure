@@ -1,4 +1,4 @@
-(defproject am.ik.cloudure/cloudure "0.1.0-SNAPSHOT" 
+(defproject org.clojars.making/cloudure "0.1.0-SNAPSHOT" 
   :description "a Hadoop(MapReduce) library for Hadoop" 
   :dependencies [[org.clojure/clojure "1.1.0"] 
                  [org.clojure/clojure-contrib "1.1.0"]
@@ -11,5 +11,7 @@
                  [commons-logging/commons-logging-api "1.0.4"]
                  [commons-net/commons-net "1.4.1"]
                  ]
-  :dev-dependencies [[leiningen/lein-swank "1.1.0"]                     ]
+  :dev-dependencies [[leiningen/lein-swank "1.1.0"]
+                     [lein-clojars "0.5.0-SNAPSHOT"]
+                     ]
   )
