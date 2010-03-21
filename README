@@ -3,7 +3,7 @@ a Hadoop(MapReduce) library for Clojure
 
 ## Usage
 add
-[org.clojars.making/cloudure "0.1.0-SNAPSHOT"]
+[am.ik/cloudure "0.1.0-SNAPSHOT"]
 to your project.clj
 
 ## Installation
